@@ -103,34 +103,39 @@ def fetch_data(username):
 
 print("Running")
 while True:
-    data = fetch_data(username)
-    drawing = Drawing(data['pixels'], data['size'], data['location'])
-    canvas = Canvas(username, password)
     try:
-        x, y, target_color = drawing.get_random_pixel()
-        actual_color = canvas.get_pixel(x,y)
-        while actual_color == target_color:
+        data = fetch_data(username)
+        drawing = Drawing(data['pixels'], data['size'], data['location'])
+        canvas = Canvas(username, password)
+        try:
             x, y, target_color = drawing.get_random_pixel()
-        print("wrong color at", x, y, actual_color, "instead of", target_color)
-        time_to_sleep = canvas.put_pixel(x,y,target_color)
-        final_color = canvas.get_pixel(x,y)
-        if final_color == target_color:
-            print("color successfully drawn at",x,y,target_color)
-        else:
-            print("failed: color at",x,y,"is",final_color)
+            actual_color = canvas.get_pixel(x,y)
+            while actual_color == target_color:
+                x, y, target_color = drawing.get_random_pixel()
+            print("wrong color at", x, y, actual_color, "instead of", target_color)
+            time_to_sleep = canvas.put_pixel(x,y,target_color)
+            final_color = canvas.get_pixel(x,y)
+            if final_color == target_color:
+                print("color successfully drawn at",x,y,target_color)
+            else:
+                print("failed: color at",x,y,"is",final_color)
 
-        time.sleep(time_to_sleep)
-    except urllib.error.HTTPError as httperr:
-        print(httperr)
-        if httperr.code == 429:
-            print("Requesting too soon, let's sleep a bit (", delay_minutes, " minutes)...")
-            time.sleep(delay_minutes*60)
-        if httperr.code == 403:
-            print(canvas.write_opener.addheaders)
-            print("Auth error, exiting...")
-            exit(1)
-        else:
-            print("Unknown problem, going on...")
+            time.sleep(time_to_sleep)
+        except urllib.error.HTTPError as httperr:
+            print(httperr)
+            if httperr.code == 429:
+                print("Requesting too soon, let's sleep a bit (", delay_minutes, " minutes)...")
+                time.sleep(delay_minutes*60)
+            if httperr.code == 403:
+                print(canvas.write_opener.addheaders)
+                print("Auth error, exiting...")
+                exit(1)
+            else:
+                print("Unknown problem, going on...")
+    except Exception as e:
+        print("this is unexpected, maybe investigate!")
+        print(e)
+
     # rest a bit
     time.sleep(0.5)
 
