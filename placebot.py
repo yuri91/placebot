@@ -109,9 +109,9 @@ while True:
         canvas = Canvas(username, password)
         try:
             x, y, target_color = drawing.get_random_pixel()
-            actual_color = canvas.get_pixel(x,y)
             while actual_color == target_color:
                 x, y, target_color = drawing.get_random_pixel()
+                actual_color = canvas.get_pixel(x,y)
             print("wrong color at", x, y, actual_color, "instead of", target_color)
             time_to_sleep = canvas.put_pixel(x,y,target_color)
             final_color = canvas.get_pixel(x,y)
