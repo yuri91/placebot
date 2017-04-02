@@ -96,7 +96,7 @@ if args.password:
 else:
     password = getpass.getpass("PASSWORD: ")
 print("Running")
-data = json.load(open(sys.argv[1]))
+data = json.load(open(args.image_data))
 drawing = Drawing(data['pixels'], data['size'], location)
 canvas = Canvas(username, password)
 while True:
