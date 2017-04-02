@@ -64,6 +64,10 @@ class Canvas:
         session = json.loads(resp)["json"]["data"]["cookie"]
         self.write_opener.addheaders.append(('Cookie', 'reddit_session=' + session))
 
+        modhash = json.loads(self.write_opener.open(
+            "https://www.reddit.com/api/me.json").read())["data"]["modhash"]
+        self.write_opener.addheaders.append(('x-modhash', modhash))
+
     def get_pixel(self,x,y):
         resp = self.read_opener.open(
             "https://www.reddit.com/api/place/pixel.json?x=" + str(x) + "&y=" + str(y)).read()
@@ -72,8 +76,6 @@ class Canvas:
 
     def put_pixel(self,x,y,color):
         data = urllib.parse.urlencode({'x': x, 'y': y, 'color': color})
-        modhash = json.loads(self.write_opener.open(
-            "https://www.reddit.com/api/me.json").read())["data"]["modhash"]
         draw_api = self.write_opener.open(
             "https://www.reddit.com/api/place/draw.json", data.encode()).read()
         time_to_sleep = json.loads(draw_api).get('wait_seconds', 0)
@@ -104,14 +106,24 @@ while True:
                 x, y, target_color = drawing.get_random_pixel()
             print("wrong color at", x, y, actual_color, "instead of", target_color)
             time_to_sleep = canvas.put_pixel(x,y,target_color)
+            final_color = canvas.get_pixel(x,y)
+            if final_color == target_color:
+                print("color successfully drawn at",x,y,target_color)
+            else:
+                print("failed: color at",x,y,"is",final_color)
+
             time.sleep(time_to_sleep)
         except urllib.error.HTTPError as httperr:
-            if httperr.code == 403:
-                print("Requesting too soon, let's sleep a bit (", delay_minutes, " minutes)")
+            print(httperr)
+            if httperr.code == 429:
+                print("Requesting too soon, let's sleep a bit (", delay_minutes, " minutes)...")
                 time.sleep(delay_minutes*60)
+            if httperr.code == 403:
+                print(canvas.write_opener.addheaders)
+                print("Auth error, exiting...")
+                exit(1)
             else:
-                print("Unknown problem:")
-                print(httperr)
+                print("Unknown problem, going on...")
     # rest a bit
     time.sleep(0.5)
 
