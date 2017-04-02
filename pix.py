@@ -1,6 +1,21 @@
 from PIL import Image
 import sys
 import json
+import sys
+
+import argparse
+
+parser = argparse.ArgumentParser(description='Bot for r/place.')
+parser.add_argument('image',
+                    help='png image to convert')
+parser.add_argument('-o',
+                    help='output file')
+
+args = parser.parse_args()
+if args.o:
+    out = open(args.o, 'w')
+else:
+    out = sys.stdout
 
 img = Image.open(sys.argv[1])
 pixels = img.load()
@@ -30,5 +45,5 @@ for y in range(0,img.size[1]):
         arr.append(color_map.get(pixels[(x,y)],-1))
 
 data = {'pixels':arr,'size':img.size}
-print(json.dumps(data))
+json.dump(data,out)
 
