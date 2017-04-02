@@ -21,7 +21,6 @@ parser.add_argument('--password',
 
 args = parser.parse_args()
 
-print(args)
 location = args.location
 delay_minutes = args.default_delay
 
@@ -100,19 +99,22 @@ data = json.load(open(args.image_data))
 drawing = Drawing(data['pixels'], data['size'], location)
 canvas = Canvas(username, password)
 while True:
-    try:
-        x, y, target_color = drawing.get_random_pixel()
-        actual_color = canvas.get_pixel(x,y)
-        while actual_color == target_color:
+    for i in range(500):
+        try:
             x, y, target_color = drawing.get_random_pixel()
-        print("wrong color at", x, y, actual_color, "instead of", target_color)
-        time_to_sleep = canvas.put_pixel(x,y,target_color)
-        time.sleep(time_to_sleep)
-    except urllib.error.HTTPError as httperr:
-        if httperr.code == 403:
-            print("Requesting too soon, let's sleep a bit (", delay_minutes, " minutes)")
-            time.sleep(delay_minutes*60)
-        else:
-            print("Unknown problem:")
-            print(httperr)
+            actual_color = canvas.get_pixel(x,y)
+            while actual_color == target_color:
+                x, y, target_color = drawing.get_random_pixel()
+            print("wrong color at", x, y, actual_color, "instead of", target_color)
+            time_to_sleep = canvas.put_pixel(x,y,target_color)
+            time.sleep(time_to_sleep)
+        except urllib.error.HTTPError as httperr:
+            if httperr.code == 403:
+                print("Requesting too soon, let's sleep a bit (", delay_minutes, " minutes)")
+                time.sleep(delay_minutes*60)
+            else:
+                print("Unknown problem:")
+                print(httperr)
+    # rest a bit
+    time.sleep(0.5)
 
