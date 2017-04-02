@@ -9,7 +9,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Bot for r/place.')
 parser.add_argument('image_data',
-                    help='.json describing your image')
+        help='json (file or url if starting with http(s)://) describing your image')
 parser.add_argument('--default-delay', type=int,default=5,
                     help='default sleep interval in minutes (default: 5 minutes)')
 parser.add_argument('--username',
