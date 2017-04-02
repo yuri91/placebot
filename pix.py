@@ -8,6 +8,8 @@ import argparse
 parser = argparse.ArgumentParser(description='Bot for r/place.')
 parser.add_argument('image',
                     help='png image to convert')
+parser.add_argument('--location', required=True, type=int, nargs=2,
+                    help='top left corner position of your image in the canvas')
 parser.add_argument('-o',
                     help='output file')
 
@@ -44,6 +46,6 @@ for y in range(0,img.size[1]):
     for x in range(0,img.size[0]):
         arr.append(color_map.get(pixels[(x,y)],-1))
 
-data = {'pixels':arr,'size':img.size}
+data = {'pixels':arr,'size':img.size, 'location': args.location}
 json.dump(data,out)
 

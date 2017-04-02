@@ -10,8 +10,6 @@ import argparse
 parser = argparse.ArgumentParser(description='Bot for r/place.')
 parser.add_argument('image_data',
                     help='.json describing your image')
-parser.add_argument('--location', required=True, type=int, nargs=2,
-                    help='top left corner of your image')
 parser.add_argument('--default-delay', type=int,default=5,
                     help='default sleep interval in minutes (default: 5 minutes)')
 parser.add_argument('--username',
@@ -21,7 +19,6 @@ parser.add_argument('--password',
 
 args = parser.parse_args()
 
-location = args.location
 delay_minutes = args.default_delay
 
 class Drawing:
@@ -96,7 +93,7 @@ else:
     password = getpass.getpass("PASSWORD: ")
 print("Running")
 data = json.load(open(args.image_data))
-drawing = Drawing(data['pixels'], data['size'], location)
+drawing = Drawing(data['pixels'], data['size'], data['location'])
 canvas = Canvas(username, password)
 while True:
     for i in range(500):
