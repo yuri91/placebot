@@ -94,16 +94,16 @@ if args.password:
 else:
     password = getpass.getpass("PASSWORD: ")
 
-def fetch_data():
+def fetch_data(username):
     if "http" in args.image_data:
-        data = urllib.request.urlopen(args.image_data)
+        data = urllib.request.urlopen(args.image_data+"?user="+username)
     else:
         data = open(args.image_data,"r")
     return json.load(data)
 
 print("Running")
 while True:
-    data = fetch_data()
+    data = fetch_data(username)
     drawing = Drawing(data['pixels'], data['size'], data['location'])
     canvas = Canvas(username, password)
     try:
