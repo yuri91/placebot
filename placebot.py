@@ -21,13 +21,9 @@ parser.add_argument('--password',
 
 args = parser.parse_args()
 
-## PARAMETERS #########################################
-#location =  (77,350)
-location = (0,0)
-delay_minutes = 6  # MAKE SURE THIS IS >= the actual delay (minutes)
-# Find you user agent here: http://www.whatsmyua.com/
-user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.110 Safari/537.36"
-#######################################################
+print(args)
+location = args.location
+delay_minutes = args.default_delay
 
 class Drawing:
     def __init__(self, pixels, size, location):
@@ -55,7 +51,9 @@ class Drawing:
         return x, y, target_color
 
 class Canvas:
-    def __init__(self, username, password, user_agent):
+    def __init__(self, username, password):
+        user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.110 Safari/537.36"
+
         self.read_opener = urllib.request.build_opener()
         self.read_opener.addheaders = [('User-Agent', user_agent)]
 
@@ -100,7 +98,7 @@ else:
 print("Running")
 data = json.load(open(sys.argv[1]))
 drawing = Drawing(data['pixels'], data['size'], location)
-canvas = Canvas(username, password, user_agent)
+canvas = Canvas(username, password)
 while True:
     try:
         x, y, target_color = drawing.get_random_pixel()
