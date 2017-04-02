@@ -26,6 +26,17 @@ class Drawing:
         self.pixels = pixels
         self.size = size
         self.location = location
+        self.pool = []
+
+        self.xmin = self.location[0]
+        self.xmax = self.xmin+self.size[0]-1
+        self.ymin = self.location[1]
+        self.ymax = self.ymin+self.size[1]-1
+        for i in range(self.xmin,self.xmax+1):
+            for j in range(self.ymin,self.ymax+1):
+                self.pool.append((i,j))
+        random.shuffle(self.pool)
+
     def get_pixel_local(self, x, y):
         if x < 0 or y < 0 or x > self.size[0] or y > self.size[1]:
             return -1
@@ -36,13 +47,10 @@ class Drawing:
         return self.get_pixel_local(dx,dy)
     def get_random_pixel(self):
         target_color = -1
-        xmin = self.location[0]
-        xmax = xmin+self.size[0]-1
-        ymin = self.location[1]
-        ymax = ymin+self.size[1]-1
         while target_color == -1:
-            x = random.randint(xmin, xmax)
-            y = random.randint(ymin, ymax)
+            if len(self.pool) == 0:
+                raise Exception("No more pixels")
+            x,y = self.pool.pop()
             target_color = self.get_pixel(x, y)
         return x, y, target_color
 
@@ -68,10 +76,14 @@ class Canvas:
             "https://www.reddit.com/api/me.json").read())["data"]["modhash"]
         self.write_opener.addheaders.append(('x-modhash', modhash))
 
+        self.map = self.read_opener.open("https://www.reddit.com/api/place/board-bitmap").read()
+
     def get_pixel(self,x,y):
-        resp = self.read_opener.open(
-            "https://www.reddit.com/api/place/pixel.json?x=" + str(x) + "&y=" + str(y)).read()
-        color = int(json.loads(resp)["color"])
+        color = self.map[y*500+int(x/2)]
+        if x%2 == 0:
+            color >>= 4
+        else:
+            color &= 0xF
         return color
 
     def put_pixel(self,x,y,color):
@@ -116,12 +128,7 @@ while True:
                 time.sleep(0.1)
             print("wrong color at", x, y, actual_color, "instead of", target_color)
             time_to_sleep = canvas.put_pixel(x,y,target_color)
-            final_color = canvas.get_pixel(x,y)
-            if final_color == target_color:
-                print("color successfully drawn at",x,y,target_color)
-            else:
-                print("failed: color at",x,y,"is",final_color)
-
+            print("fixed")
             time.sleep(time_to_sleep)
         except urllib.error.HTTPError as httperr:
             print(httperr)
@@ -139,5 +146,5 @@ while True:
         print(e)
 
     # rest a bit
-    time.sleep(0.5)
+    time.sleep(1)
 
