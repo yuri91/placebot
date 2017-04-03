@@ -49,7 +49,7 @@ class Drawing:
         target_color = -1
         while target_color == -1:
             if len(self.pool) == 0:
-                raise Exception("No more pixels")
+                raise NoMorePixels()
             x,y = self.pool.pop()
             target_color = self.get_pixel(x, y)
         return x, y, target_color
@@ -113,42 +113,49 @@ def fetch_data(username):
         data = open(args.image_data,"r")
     return json.load(data)
 
+class NoMorePixels(Exception):
+    def __str__(self):
+        return "No more pixels to fix"
+
 print("Running")
 while True:
     try:
         data = fetch_data(username)
         drawing = Drawing(data['pixels'], data['size'], data['location'])
         canvas = Canvas(username, password)
-        try:
+        x, y, target_color = drawing.get_random_pixel()
+        actual_color = canvas.get_pixel(x,y)
+        while actual_color == target_color:
             x, y, target_color = drawing.get_random_pixel()
             actual_color = canvas.get_pixel(x,y)
-            while actual_color == target_color:
-                x, y, target_color = drawing.get_random_pixel()
-                actual_color = canvas.get_pixel(x,y)
-                time.sleep(0.1)
-            print("wrong color at", x, y, actual_color, "instead of", target_color)
-            time_to_sleep = canvas.put_pixel(x,y,target_color)
-            print("fixed")
-            time.sleep(time_to_sleep)
-        except urllib.error.HTTPError as httperr:
-            print(httperr)
-            if httperr.code == 429:
-                print("Requesting too soon, let's sleep a bit (", delay_minutes, " minutes)...")
-                time.sleep(delay_minutes*60)
-            if httperr.code == 403:
-                print(canvas.write_opener.addheaders)
-                print("Auth error, exiting...")
-                exit(1)
-            else:
-                print("Unknown problem, going on...")
+            time.sleep(0.1)
+        print("wrong color at", x, y, actual_color, "instead of", target_color)
+        time_to_sleep = canvas.put_pixel(x,y,target_color)
+        print("fixed")
+        time.sleep(time_to_sleep)
+    except urllib.error.HTTPError as httperr:
+        print(httperr)
+        if httperr.code == 429:
+            print("Requesting too soon, let's sleep a bit (", delay_minutes, " minutes)...")
+            time.sleep(delay_minutes*60)
+        if httperr.code == 403:
+            print(canvas.write_opener.addheaders)
+            print("Auth error, exiting...")
+            exit(1)
+        else:
+            print("Unknown problem, going on...")
     except KeyError as k:
         print(k)
         print("Check username/password")
         exit(1)
+    except NoMorePixels as n:
+        print(n)
+        print("sleep a bit...")
+        # rest a bit
+        time.sleep(10)
     except Exception as e:
         print("this is unexpected, maybe investigate!")
         print(e)
-
-    # rest a bit
-    time.sleep(1)
+        # rest a bit
+        time.sleep(10)
 
