@@ -141,6 +141,10 @@ while True:
                 exit(1)
             else:
                 print("Unknown problem, going on...")
+    except KeyError as k:
+        print(k)
+        print("Check username/password")
+        exit(1)
     except Exception as e:
         print("this is unexpected, maybe investigate!")
         print(e)
